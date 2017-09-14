@@ -1,0 +1,41 @@
+---
+title: "STAT/MATH 495: Problem Set 03"
+author: "WRITE YOUR NAMES HERE"
+date: "2017-09-26"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    collapsed: false
+    smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4.5)
+
+# Load packages
+library(tidyverse)
+
+```
+
+
+# Exploratory Data Analysis
+
+```{r}
+
+```
+
+
+# Model Fit
+
+```{r}
+
+```
+
+
+# Create Submission File
+
+```{r}
+
+```
