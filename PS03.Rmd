@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 03"
-author: "WRITE YOUR NAMES HERE"
+author: "WRITE YOUR NAME HERE"
 date: "2017-09-26"
 output:
   html_document:
@@ -16,26 +16,27 @@ knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4.5)
 
 # Load packages
 library(tidyverse)
-
+data1 <- read_csv("data/data1.csv")
+data2 <- read_csv("data/data2.csv")
 ```
 
 
-# Exploratory Data Analysis
+# Question
 
-```{r}
+For both `data1` and `data2` tibbles (a tibble is a data frame with some
+metadata attached):
 
-```
+* Find the splines model with the best out-of-sample predictive ability.
+* Create a visualizaztion of this model this over the given $(x_i, y_i)$ points for $i=1,\ldots,n=3000$.
+* Create a plot with
+    + x-axis: degrees of freedom between 2 and 99
+    + y-axis: RMSE
+* Given your estimate $\widehat{\sigma}$ of $\sigma$ where $\epsilon_i$ is distributed with mean 0 and standard deviation $\sigma$.
 
 
-# Model Fit
-
-```{r}
-
-```
+# Data 1
 
 
-# Create Submission File
+# Data 2
 
-```{r}
 
-```
