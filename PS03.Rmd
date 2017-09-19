@@ -27,7 +27,7 @@ For both `data1` and `data2` tibbles (a tibble is a data frame with some
 [metadata](https://blog.rstudio.com/2016/03/24/tibble-1-0-0#tibbles-vs-data-frames) attached):
 
 * Find the splines model with the best out-of-sample predictive ability.
-* Create a plot arguing why you chose this particular model.
+* Create a visualizaztion arguing why you chose this particular model.
 * Create a visualizaztion of this model plotted over the given $(x_i, y_i)$ points for $i=1,\ldots,n=3000$.
 * Give your estimate $\widehat{\sigma}$ of $\sigma$ where the noise component $\epsilon_i$ is distributed with mean 0 and standard deviation $\sigma$.
 
