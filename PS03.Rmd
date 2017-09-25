@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 03"
-author: "WRITE YOUR NAME HERE"
+author: "Wayne Maumbe"
 date: "2017-09-26"
 output:
   html_document:
@@ -32,13 +32,180 @@ For both `data1` and `data2` tibbles (a tibble is a data frame with some
 * Give your estimate $\widehat{\sigma}$ of $\sigma$ where the noise component $\epsilon_i$ is distributed with mean 0 and standard deviation $\sigma$.
 
 
-# Data 1
+##Sampling
+### Data 1
+
+Here we create 5 random distinct pseudotest samples from the dataset while keeping track of the corresponding pseudotraining set for each respective pseudotest. Note that all pseudoset samples from the data should be a fifth of the dataset and the pseudotraining set is made up of the remaining data.
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#randomly sample without replacement a fifth of the dataset  
+set.seed(5555)
+ind1<-sample(nrow(data1),dim(data1)[1]/5, replace = FALSE)
+ftest1<-data1[ind1,]
+ftrain1<-data1[-ind1,] #the remaining data makes up the pseudotraining set.
+fpstrain1<-ftrain1
+
+#repeat process above ensuring that the sample is distinct from the first by sampling from the remaining data.  
+##(4)
+ind2<-sample(nrow(ftrain1),dim(ftrain1)[1]/4, replace = FALSE)
+ftest2<-ftrain1[ind2,]
+ftrain2<-ftrain1[-ind2,] 
+fpstrain2<-bind_rows(ftest1, ftrain2) #collect remaining data to create pseudotraining set
+
+#process is repeated here until all five combinationations are made.
+##(5)
+ind3<-sample(nrow(ftrain2),dim(ftrain2)[1]/3, replace = FALSE)
+ftest3<-ftrain2[ind3,]
+ftrain3<-ftrain2[-ind3,]
+fpstrain3<-bind_rows(ftest1,ftest2,ftrain3)
+
+##(6)
+ind4<-sample(nrow(ftrain3),dim(ftrain3)[1]/2, replace = FALSE)
+ftest4<-ftrain3[ind4,]
+ftrain4<-ftrain3[-ind4,]
+fpstrain4<-bind_rows(ftest1,ftest2,ftest3,ftrain4)
+
+##(100)
+ind5<-sample(nrow(ftrain4),dim(ftrain4)[1], replace = FALSE)
+ftest5<-ftrain4[ind5,]
+ftrain5<-ftrain4[-ind5,]
+fpstrain5<-bind_rows(ftest1,ftest2,ftest3,ftest4)
+
+#check if all values in the five pseudotest sets are distinct
+kuona1<-bind_rows(ftest1,ftest2,ftest3,ftest4,ftest5)
+kk1<-distinct(kuona1)
+dim(kk1)[1]
 ```
 
-# Data 2
+### Data 2
+
+The sampling process discribed above is applied on dataset data2.
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#use the same sampling algorithm and apply it to data2 
+set.seed(369)
+ind1<-sample(nrow(data2),dim(data2)[1]/5, replace = FALSE)
+stest1<-data2[ind1,]
+strain1<-data2[-ind1,]
+spstrain1<-strain1
+
+
+ind2<-sample(nrow(strain1),dim(strain1)[1]/4, replace = FALSE)
+stest2<-strain1[ind2,]
+strain2<-strain1[-ind2,] 
+spstrain2<-bind_rows(stest1, strain2)
+
+ind3<-sample(nrow(strain2),dim(strain2)[1]/3, replace = FALSE)
+stest3<-strain2[ind3,]
+strain3<-strain2[-ind3,]
+spstrain3<-bind_rows(stest1,stest2,strain3)
+
+ind4<-sample(nrow(strain3),dim(strain3)[1]/2, replace = FALSE)
+stest4<-strain3[ind4,]
+strain4<-strain3[-ind4,]
+spstrain4<-bind_rows(stest1,stest2,stest3,strain4)
+
+ind5<-sample(nrow(strain4),dim(strain4)[1], replace = FALSE)
+stest5<-strain4[ind5,]
+strain5<-strain4[-ind5,]
+spstrain5<-bind_rows(stest1,stest2,stest3,stest4)
+
+
+kuona2<-bind_rows(stest1,stest2,stest3,stest4,stest5)
+kk2<-distinct(kuona2)
+```
+## Finding optimal degrees of freedom
+
+First I made a function that finds the optimum degrees of freedom given a test and training dataset. This function will return a plot showing the weight of each degree of freedom according to the RSME value. Here we clearly find the optimum degree of freedom which will have the lowest RSME.  
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+opt<-function(train, test){
+  n=99 #maximum possible df
+  mat <- mat.or.vec(n,1) # makes empty vector for keeping track of the minimum rsme and df
+for (i in 2:n) { # loops goes through all possible df from the least df=2 up to n
+  smodel <- smooth.spline(x=train$x, y=train$y, df=i)
+  tidymodel<-smodel%>%
+    broom::augment()
+  output<-predict(smodel, test$x)%>%
+    tibble::as.tibble()
+  rmse<- mean((test$y - output$y)^2)%>%
+    sqrt()#calculates the rsme of the model fitted
+   mat[i]<-rmse
+   
+}
+  plot(mat[2:n], ylab ="RMSE", xlab = "df")
+return(which(mat[2:n] == min(mat[2:n])))
+}
+#mat<-as.data.frame(mat)
+#mat<-mat.or.vec(10,1)
+#mat<-c(1,2,5,6,2,3,5,5,7,5)
 ```
 
+
+The optimal df to use to fit a spline model on the dataset is the mean of all the optimal df calculated from the pseudotest and pseudotrain data.
+
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+par(mfcol=c(1,5))
+optfdf<-mean(c(opt(fpstrain1,ftest1),opt(fpstrain2,ftest2),opt(fpstrain3,ftest3),opt(fpstrain4,ftest4),opt(fpstrain5,ftest5)))
+#par(mfcol=c(1,5))
+optsdf<-mean(c(opt(spstrain1,stest1),opt(spstrain2,stest2),opt(spstrain3,stest3),opt(spstrain4,stest4),opt(spstrain5,stest5)))
+optfdf
+optsdf
+smooth.spline(x=data1$x, y=data1$y, cv=T)
+smooth.spline(x=data2$x, y=data2$y, cv=T)
+```
+
+## Model fitting
+
+### Visualization of model on pseudotest data from Data1
+```{r}
+tidy3 <- smooth.spline(x=ftest3$x,y=ftest3$y,df=optfdf) %>% 
+  broom::augment() 
+plot3 <- ggplot(tidy3, aes(x=x)) +
+  geom_point(aes(y=y)) +
+  geom_line(aes(y=.fitted), col="red")
+plot3
+```
+
+## Applying model on Data1
+```{r}
+tidy1 <- smooth.spline(x=data1$x,y=data1$y,df=optfdf) %>% 
+  broom::augment() 
+plot1 <- ggplot(tidy1, aes(x=x)) +
+  geom_point(aes(y=y)) +
+  geom_line(aes(y=.fitted), col="red")
+plot1
+```
+
+### Visualization of model on pseudotest data from Data2
+```{r}
+tidy4 <- smooth.spline(x=stest3$x,y=stest3$y,df=optsdf) %>% 
+  broom::augment() 
+plot4 <- ggplot(tidy4, aes(x=x)) +
+  geom_point(aes(y=y)) +
+  geom_line(aes(y=.fitted), col="red")
+plot4
+```
+
+##Applying model on Data2 
+```{r}
+tidy2 <- smooth.spline(x=data2$x,y=data2$y,df=optsdf) %>% 
+  broom::augment() 
+plot2 <- ggplot(tidy2, aes(x=x)) +
+  geom_point(aes(y=y)) +
+  geom_line(aes(y=.fitted), col="red")
+plot2
+```
+
+
+## Estimating the distribution of noise
+
+```{r}
+err1<-data1$y - tidy1$.fitted
+m1<-round(mean(err1,na.rm=T), 4)
+s1<-round(sd(err1,na.rm=T),3)
+err2<-data2$y - tidy2$.fitted
+m2<-round(mean(err2,na.rm=T),4)
+s2<-round(sd(err2,na.rm=T),3)
+```
+
+For data1 the the noise distribution can be estimated by mean `r m1` and standard deviation `r s1` and data2 is estimated by `r m2` and standard deviation `r s2`. 
